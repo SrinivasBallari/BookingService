@@ -5,7 +5,8 @@ const { StatusCodes } = require('http-status-codes');
 class BookingRepo {
     async create(data){
         try {
-            const booking = Booking.create(data);
+            const booking = await Booking.create(data);
+            return booking;
         } catch (error) {
             if(error.name == 'SequelizeValidationError'){
                 throw new ValidationError(error);
@@ -14,6 +15,24 @@ class BookingRepo {
                 'RepositoryError',
                 'Cannot create booking',
                 'Issue creating a booking now ! Please try again later',
+                StatusCodes.INTERNAL_SERVER_ERROR
+            );
+        }
+    }
+
+    async update(bookingId, data){
+        try {
+            const booking = await Booking.findByPk(bookingId);
+            if(data.status){
+                booking.status = data.status;
+            }
+            await booking.save();
+            return booking;
+        } catch (error) {
+            throw new AppError(
+                'RepositoryError',
+                'Cannot update the booking',
+                'Issue update the booking now ! Please try again later',
                 StatusCodes.INTERNAL_SERVER_ERROR
             );
         }
